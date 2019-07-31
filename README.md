@@ -5,7 +5,7 @@ An experiment to visualise and sonify the yield curve as featured in the [Financ
 
 Clone/download the repo and simply run the folder using browser-sync or similar. All assets are localised to support live performance. There are no other dependencies.
 
-##Making sound
+## Making sound
 
 This project makes use of the d3js.js and webmidi.js libraries to visualise and sonify US yield curve data. The sonification maps data to musical pitches. The notes themselves are output as note messages on MIDI channels 1 through 4. Due to MIDI browser implementation, this is supported in Chrome only.
 
