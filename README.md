@@ -12,9 +12,9 @@ Due to MIDI browser implementation, sound output is currently supported in Chrom
 
 This project makes use of [d3js.js](https://d3js.org/) and [webmidi.js](https://github.com/djipco/webmidi) libraries to visualise and sonify US yield curve data. The sonification maps data to musical pitches. The notes themselves are output as note messages on MIDI channels 1 through 4
 
-- Channel 1 - main yield curve sonification
-- Channel 2 - annotation (peak inversion) sound trigger
-- Channel 3 - bass drum
-- Channel 4 - incremental vocal samples mapped to midi notes
+- Channel 1: main yield curve sonification (a Marimba in the video)
+- Channel 2: annotation (peak inversion) sound trigger
+- Channel 3: bass drum for month (CR78-style)
+- Channel 4: incremental vocal samples for year mapped to midi notes
 
 To actually hear a sound you need to establish a connection between Chrome and a valid MIDI-enabled sound source; to hear all tracks, you need a multi-timbral sound source. In my published project, I used Apple Logic Pro. But you could also use an in-browser solution such as [websynths.com](https://websynths.com/) - or connect to a hardware synthesizer using an appropriate MIDI interface.
