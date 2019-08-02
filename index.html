@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Yield curve</title>
-
-    <link rel="stylesheet" href="assets/styles.css"/>
+    <link rel="stylesheet" href="assets/styles.css" />
     <link rel="stylesheet" href="assets/origami-fonts.css" />
     <script src="assets/d3.v4.js"></script>
     <script src="assets/g-chartframe.js"></script>
@@ -11,430 +10,477 @@
     <script src="assets/g-axis.js"></script>
     <script src="assets/g-musicscales.js"></script>
     <script src="assets/webmidi.min.js"></script>
-
     <style>
-    #timeText{font-size:36px;fill-opacity:0.5;font-variant-numeric: tabular-nums};
+      #timeText {
+        font-size: 36px;
+        fill-opacity: 0.5;
+        font-variant-numeric: tabular-nums;
+      }
     </style>
-
-</head>
-<body>
-
-</body>
-<script type="text/javascript">
-
-/*Orchestration: suggestions
+  </head>
+  <body></body>
+  <script type="text/javascript">
+    /*Orchestration: suggestions
     Track 1: Midi ch 1: Yield curve - marimba
     Track 2: Midi ch 2: Peak inversion sound effect
     Track 3: Midi ch 3: Bass drum (CR78)
     Track 4: Midi ch 4: Vocal samples
 */
 
-//wholetone scale spanning 4 octaves
-const wholeNotes = scaleNotes("C","wholetone",3,4)
+    //wholetone scale spanning 4 octaves
+    const wholeNotes = scaleNotes("C", "wholetone", 3, 4);
 
-//mappings to vocal samples on track 4
-const yearNotes = scaleNotes("C","semitone",1,4)
-//(Orchestration: use octStart of 5 to access OK Computer voice in EXS24 project file)
+    //mappings to vocal samples on track 4
+    const yearNotes = scaleNotes("C", "semitone", 1, 4);
+    //(Orchestration: use octStart of 5 to access OK Computer voice in EXS24 project file)
 
-const config = {
-    timeIndex:0,
-    showInversion:true,
-    animateSpeed:20,
-    arpFreq:30,
-    arpLength:100,
-    arpChannel:1,
-    arpOn:true,
-    drOn:false,
-    voOn:false,
-    invOn:false,
-    logArp:true,
-    yieldPoints:[0.083,0.25,0.5,1,2,3,5,7,10,20,30],
-    yieldLabels:["","","","1y","","","5y","7y","10y","20y","30y"]
-}
+    const config = {
+      timeIndex: 0,
+      showInversion: true,
+      animateSpeed: 20,
+      arpFreq: 30,
+      arpLength: 100,
+      arpChannel: 1,
+      arpOn: true,
+      drOn: false,
+      voOn: false,
+      invOn: false,
+      logArp: true,
+      yieldPoints: [0.083, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
+      yieldLabels: ["", "", "", "1y", "", "", "5y", "7y", "10y", "20y", "30y"]
+    };
 
-const keyInversions = {
-    items:[
-    {date:"24/10/1979",desc:"Oct 1979 - 3 months before recession"},
-    {date:"17/12/1980",desc:"Dec 1980 - 8 months before recession"},
-    {date:"30/03/1989",desc:"Mar 1989 - 16 months before recession"},
-    {date:"18/08/2000",desc:"Aug 2000 - 7 months before dotcom bubble bursts"},
-    {date:"01/02/2006",desc:"Feb 2006 - 21 months before great recession (financial crisis)"},
-    {date:"03/01/2019",desc:"The yield curve begins to invert..."}
-    ]
-}
+    const keyInversions = {
+      items: [
+        { date: "24/10/1979", desc: "Oct 1979 - 3 months before recession" },
+        { date: "17/12/1980", desc: "Dec 1980 - 8 months before recession" },
+        { date: "30/03/1989", desc: "Mar 1989 - 16 months before recession" },
+        {
+          date: "18/08/2000",
+          desc: "Aug 2000 - 7 months before dotcom bubble bursts"
+        },
+        {
+          date: "01/02/2006",
+          desc: "Feb 2006 - 21 months before great recession (financial crisis)"
+        },
+        { date: "03/01/2019", desc: "The yield curve begins to invert..." }
+      ]
+    };
 
-    
-d3.csv("yield-curve-data.csv",function(data){
+    d3.csv("yield-curve-data.csv", function(data) {
+      const frameConfig = {
+        chartType: "socialFrame",
+        title: "The US yield curve",
+        subtitle: "Treasury yields (%)",
+        source: "Produced by Alan Smith|Data source: US Treasury"
+      };
 
-    const frameConfig = {
-        chartType:'socialFrame',
-        title:'The US yield curve',
-        subtitle:'Treasury yields (%)',
-        source:'Produced by Alan Smith|Data source: US Treasury',
-    }
+      WebMidi.enable(function(err) {
+        if (err) {
+          console.log("WebMidi could not be enabled.", err);
+        } else {
+          const output = WebMidi.outputs[1]; //be careful to assign MIDI output to a valid midi connection (on a Mac - check MIDI Studio in Audio MIDI setup)
 
-    WebMidi.enable(function (err) {
-          if (err) {
-            console.log("WebMidi could not be enabled.", err);
-          } else {
-            const output = WebMidi.outputs[1];//be careful to assign MIDI output to a valid midi connection (on a Mac - check MIDI Studio in Audio MIDI setup)
+          WebMidi.octaveOffset = -1;
 
-    WebMidi.octaveOffset = -1;
-    
-    //parse date
-    const parseDate = d3.timeParse("%d/%m/%Y")
-    for (const item of keyInversions.items) {
-        item.date = parseDate(item.date)
-    }
+          //parse date
+          const parseDate = d3.timeParse("%d/%m/%Y");
+          for (const item of keyInversions.items) {
+            item.date = parseDate(item.date);
+          }
 
-    const yields = Object.keys(data[0]).filter(function(d){return d != "date"})
-    config.timeLength = data.length;
-    const displayTime = d3.timeFormat("%d/%m/%Y");
+          const yields = Object.keys(data[0]).filter(function(d) {
+            return d != "date";
+          });
+          config.timeLength = data.length;
+          const displayTime = d3.timeFormat("%d/%m/%Y");
 
-    //create chart frame
-    const svg = d3.select("body").append("svg")
-    const chartFrame = createFrame(frameConfig.chartType)
-    svg.call(chartFrame);
+          //create chart frame
+          const svg = d3.select("body").append("svg");
+          const chartFrame = createFrame(frameConfig.chartType);
+          svg.call(chartFrame);
 
-    //basic colour palettes
-    const seqColors = gChartcolour.sequentialMulti
-    const divColors = gChartcolour.diverging;
-    const lineColors = getLineColors(frameConfig.chartType)
-    const barColors = getBarColors(frameConfig.chartType)
+          //basic colour palettes
+          const seqColors = gChartcolour.sequentialMulti;
+          const divColors = gChartcolour.diverging;
+          const lineColors = getLineColors(frameConfig.chartType);
+          const barColors = getBarColors(frameConfig.chartType);
 
-    //plot dimensions
-    const w = chartFrame.dimension().width;
-    const h = chartFrame.dimension().height;
-    const rem = chartFrame.rem();
-    const anno = chartFrame.plot().append("g").attr("class","annotations-holder");
-    
-    let allYears = [];
-    ///////parse data///////
-    data.forEach(function(d){
-        d.date = parseDate(d.date);
-        allYears.push(d.date.getFullYear());
-        yields.forEach(function(e){
-            if (d[e]){
+          //plot dimensions
+          const w = chartFrame.dimension().width;
+          const h = chartFrame.dimension().height;
+          const rem = chartFrame.rem();
+          const anno = chartFrame
+            .plot()
+            .append("g")
+            .attr("class", "annotations-holder");
+
+          let allYears = [];
+          ///////parse data///////
+          data.forEach(function(d) {
+            d.date = parseDate(d.date);
+            allYears.push(d.date.getFullYear());
+            yields.forEach(function(e) {
+              if (d[e]) {
                 d[e] = Number(d[e]);
-            }
-        })
-    })
-    //extract unique years
-    const years = d3.map(allYears, function(d){return d}).keys()
-
-    //create a d3 scale to map years to note values
-    const yearScale=d3.scaleOrdinal()
-        .domain(years)
-        .range(yearNotes)
-    //we can now trigger vocal sample by sending a year
-    //output.playNote(yearScale("1983"),4,{duration:500});
-
-    //determine max values in yields
-    let extent = extentMulti(data,yields)
-
-    //scale to map data domain to musical notes
-    const wholeScale = d3.scaleQuantize()
-                        .domain(extent)
-                        .range(wholeNotes)
-
-    //add axes using g-axis
-    const yAxis = gAxis.yLinear()
-        .tickSize(w)
-        .domain(extent)
-        .range([h,0])
-    chartFrame.plot()
-        .call(yAxis);
-
-    //create vertical scale
-    const yScale = d3.scaleLinear()
-        .domain(extent)
-        .range([h,0]);
-
-    const xScale = d3.scaleLinear()
-        .domain(d3.extent(config.yieldPoints))
-        .range([0, w-yAxis.labelWidth()]);
-
-    let lineGenerator = d3.line()
-        .x(function(d) {
-            return xScale(d.x);
-        })
-        .y(function(d) {
-            return yScale(d.y);
-        });
-
-    /*graphics*/
-    const graphics = chartFrame.plot().append("g");
-
-    //draw yield labels
-    anno.append("g")
-        .selectAll("text")
-        .data(config.yieldLabels)
-        .enter()
-        .append("text")
-        .text(function(d){return d;})
-        .attr("class","config.yieldLabels")
-        .attr("x",function(d,i){return xScale(config.yieldPoints[i])})
-        .attr("y",h+rem)
-        .attr("text-anchor","middle")
-     anno.append('text')
-        .attr("id","timeText")
-        .attr("x",w-yAxis.labelWidth())
-        .attr("y",h)
-        .text(displayTime(data[config.timeIndex].date))
-        .style('text-anchor', 'end')
-        .attr('dy', -(rem / 2))
-
-    //container for 'ghosts' of peak inversion annotations
-    const ghost = graphics.append("g").attr("class","annotations-holder");
-
-    //chart line
-    graphics.append("path")
-        .attr("id","yieldLine")
-        .attr("class","lines")
-        .attr("stroke",lineColors[1])
-        .attr("d",function(){
-            let linedata = []
-            yields.forEach(function(e,j){
-                rowdata = data[config.timeIndex];
-                if (rowdata[e]){
-                    let obj = {}
-                    obj.x=config.yieldPoints[j];
-                    obj.y=rowdata[e];
-                    linedata.push(obj)
-                }
+              }
+            });
+          });
+          //extract unique years
+          const years = d3
+            .map(allYears, function(d) {
+              return d;
             })
-            return lineGenerator(linedata)
-        })
+            .keys();
 
-    graphics.append('g')
-        .attr("id","yieldCircles")
-        .selectAll("circle")
-        .data(config.yieldPoints)
-        .enter()
-        .append("circle")
-        .attr("fill",barColors[0])
-        .attr("cx",function(d,i){return xScale(d)})
-        .attr("cy",function(d,i){
-            return yScale(data[config.timeIndex][yields[i]])
-        })
-        .attr("r",function(d,i){
-            //surpress circle size if no value
-            if (data[config.timeIndex][yields[i]]){
-                return rem/4;}  else    {
+          //create a d3 scale to map years to note values
+          const yearScale = d3
+            .scaleOrdinal()
+            .domain(years)
+            .range(yearNotes);
+          //we can now trigger vocal sample by sending a year
+          //output.playNote(yearScale("1983"),4,{duration:500});
+
+          //determine max values in yields
+          let extent = extentMulti(data, yields);
+
+          //scale to map data domain to musical notes
+          const wholeScale = d3
+            .scaleQuantize()
+            .domain(extent)
+            .range(wholeNotes);
+
+          //add axes using g-axis
+          const yAxis = gAxis
+            .yLinear()
+            .tickSize(w)
+            .domain(extent)
+            .range([h, 0]);
+          chartFrame.plot().call(yAxis);
+
+          //create vertical scale
+          const yScale = d3
+            .scaleLinear()
+            .domain(extent)
+            .range([h, 0]);
+
+          const xScale = d3
+            .scaleLinear()
+            .domain(d3.extent(config.yieldPoints))
+            .range([0, w - yAxis.labelWidth()]);
+
+          let lineGenerator = d3
+            .line()
+            .x(function(d) {
+              return xScale(d.x);
+            })
+            .y(function(d) {
+              return yScale(d.y);
+            });
+
+          /*graphics*/
+          const graphics = chartFrame.plot().append("g");
+
+          //draw yield labels
+          anno
+            .append("g")
+            .selectAll("text")
+            .data(config.yieldLabels)
+            .enter()
+            .append("text")
+            .text(function(d) {
+              return d;
+            })
+            .attr("class", "config.yieldLabels")
+            .attr("x", function(d, i) {
+              return xScale(config.yieldPoints[i]);
+            })
+            .attr("y", h + rem)
+            .attr("text-anchor", "middle");
+          anno
+            .append("text")
+            .attr("id", "timeText")
+            .attr("x", w - yAxis.labelWidth())
+            .attr("y", h)
+            .text(displayTime(data[config.timeIndex].date))
+            .style("text-anchor", "end")
+            .attr("dy", -(rem / 2));
+
+          //container for 'ghosts' of peak inversion annotations
+          const ghost = graphics
+            .append("g")
+            .attr("class", "annotations-holder");
+
+          //chart line
+          graphics
+            .append("path")
+            .attr("id", "yieldLine")
+            .attr("class", "lines")
+            .attr("stroke", lineColors[1])
+            .attr("d", function() {
+              let linedata = [];
+              yields.forEach(function(e, j) {
+                rowdata = data[config.timeIndex];
+                if (rowdata[e]) {
+                  let obj = {};
+                  obj.x = config.yieldPoints[j];
+                  obj.y = rowdata[e];
+                  linedata.push(obj);
+                }
+              });
+              return lineGenerator(linedata);
+            });
+
+          graphics
+            .append("g")
+            .attr("id", "yieldCircles")
+            .selectAll("circle")
+            .data(config.yieldPoints)
+            .enter()
+            .append("circle")
+            .attr("fill", barColors[0])
+            .attr("cx", function(d, i) {
+              return xScale(d);
+            })
+            .attr("cy", function(d, i) {
+              return yScale(data[config.timeIndex][yields[i]]);
+            })
+            .attr("r", function(d, i) {
+              //surpress circle size if no value
+              if (data[config.timeIndex][yields[i]]) {
+                return rem / 4;
+              } else {
+                return 0;
+              }
+            });
+
+          setInterval(function() {
+            if (config.timeIndex < config.timeLength - 1) {
+              config.timeIndex++;
+
+              //establish if year has changed
+              if (
+                data[config.timeIndex].date.getFullYear() !=
+                data[config.timeIndex - 1].date.getFullYear()
+              ) {
+                if (config.voOn) {
+                  //play year
+                  output.playNote(
+                    yearScale(data[config.timeIndex].date.getFullYear()),
+                    4,
+                    { duration: 500 }
+                  );
+                }
+              }
+
+              if (
+                data[config.timeIndex].date.getMonth() !=
+                data[config.timeIndex - 1].date.getMonth()
+              ) {
+                //play month
+                if (config.drOn) {
+                  output.playNote("c1", 3, { duration: 50 });
+                }
+              }
+
+              //trigger for an arpeggio
+              if (config.timeIndex % config.arpFreq == 0) {
+                const notes = new Array(12);
+
+                for (i = 0; i < 11; i++) {
+                  if (data[config.timeIndex][yields[i]]) {
+                    notes[i] = wholeScale(data[config.timeIndex][yields[i]]);
+                  }
+                }
+                //arpeggiate
+                if (config.arpOn) {
+                  notes.forEach(function(d, i) {
+                    output.playNote(d, config.arpChannel, {
+                      duration: config.arpLength,
+                      time:
+                        "+" + i * ((config.animateSpeed * config.arpFreq) / 12)
+                    });
+                  });
+                }
+
+                if (config.logArp) {
+                  console.log(notes);
+                }
+              }
+
+              d3.select("#yieldCircles")
+                .selectAll("circle")
+                .attr("cy", function(d, i) {
+                  return yScale(data[config.timeIndex][yields[i]]);
+                })
+                .attr("r", function(d, i) {
+                  //surpress circle size if no value
+                  if (data[config.timeIndex][yields[i]]) {
+                    return rem / 4;
+                  } else {
                     return 0;
-                }
-        }) 
+                  }
+                });
 
-    setInterval(function(){
+              d3.select("#yieldLine").attr("d", function() {
+                let linedata = [];
+                let linePosY;
+                yields.forEach(function(e, j) {
+                  rowdata = data[config.timeIndex];
+                  if (rowdata[e]) {
+                    let obj = {};
+                    obj.x = config.yieldPoints[j];
+                    obj.y = rowdata[e];
+                    linedata.push(obj);
+                  }
+                });
+                return lineGenerator(linedata);
+              });
 
-            if (config.timeIndex < config.timeLength-1){
-                    config.timeIndex++; 
+              for (const item of keyInversions.items) {
+                if (
+                  item.date.getTime() === data[config.timeIndex].date.getTime()
+                ) {
+                  if (config.showInversion) {
+                    const ghostGroup = ghost.append("g");
 
-                //establish if year has changed
-                if (data[config.timeIndex].date.getFullYear()!=data[config.timeIndex-1].date.getFullYear())   {
-
-                    if (config.voOn){
-                    //play year
-                        output.playNote(yearScale(data[config.timeIndex].date.getFullYear()),4,{duration:500});
-                    }
-                }
-
-                if (data[config.timeIndex].date.getMonth()!=data[config.timeIndex-1].date.getMonth())   {
-                    //play month
-                        if (config.drOn) {
-                            output.playNote("c1",3,{duration:50});
-                        }
-                }
-
-                //trigger for an arpeggio
-                if (config.timeIndex % config.arpFreq == 0){
-
-                    const notes = new Array(12);
-
-                    for (i=0;i<11;i++)    {
-                        if (data[config.timeIndex][yields[i]]){
-                            notes[i]=wholeScale(data[config.timeIndex][yields[i]]);
-                        }
-                    }
-                    //arpeggiate
-                    if (config.arpOn){
-                        notes.forEach(function(d,i){
-                            output.playNote(d,config.arpChannel,{duration:config.arpLength,time:"+"+i*((config.animateSpeed*config.arpFreq)/12)})
-                        });
+                    if (config.invOn) {
+                      output.playNote("C3", 2, { duration: 4000 });
                     }
 
-                    if (config.logArp){
-                        console.log(notes)
-                    } 
-                }
-
-                d3.select("#yieldCircles")
-                    .selectAll("circle")
-                    .attr("cy",function(d,i){
-                        return yScale(data[config.timeIndex][yields[i]])
-                    })
-                    .attr("r",function(d,i){
-                        //surpress circle size if no value
-                        if (data[config.timeIndex][yields[i]]){
-                            return rem/4;}  else    {
-                            return 0;
-                        }
-                })
-
-                d3.select("#yieldLine")
-                    .attr("d",function(){
-                    let linedata = []
-                    let linePosY;
-                    yields.forEach(function(e,j){
-                        rowdata = data[config.timeIndex];
-                        if (rowdata[e]){
-                            let obj = {}
-                            obj.x=config.yieldPoints[j];
-                            obj.y=rowdata[e];
+                    const ghostLine = ghostGroup
+                      .append("path")
+                      .attr("opacity", 0.8)
+                      .attr("id", "yield" + config.timeIndex)
+                      .attr("class", "lines")
+                      .style("stroke-width", "3px")
+                      .attr("stroke", lineColors[5])
+                      .attr("d", function() {
+                        let linedata = [];
+                        yields.forEach(function(e, j) {
+                          rowdata = data[config.timeIndex];
+                          if (rowdata[e]) {
+                            let obj = {};
+                            obj.x = config.yieldPoints[j];
+                            obj.y = rowdata[e];
                             linedata.push(obj);
-                        }
-                    })
-                return lineGenerator(linedata)
-                })
+                            if (j == yields.length - 1) {
+                              linePosY = yScale(rowdata[e]) - 10;
+                            }
+                          }
+                        });
+                        return lineGenerator(linedata);
+                      });
 
-                for (const item of keyInversions.items) {
-                   if (item.date.getTime()===data[config.timeIndex].date.getTime()){
-
-                        if (config.showInversion){
-
-                        const ghostGroup = ghost.append("g")
-
-                        if (config.invOn){
-                            output.playNote("C3",2,{duration:4000})
-                        }
-
-                        const ghostLine = ghostGroup.append("path")
-                        .attr("opacity",0.8)
-                        .attr("id","yield"+config.timeIndex)
-                        .attr("class","lines")
-                        .style("stroke-width","3px")
-                        .attr("stroke",lineColors[5])
-                        .attr("d",function(){
-                            let linedata = []
-                            yields.forEach(function(e,j){
-                                rowdata = data[config.timeIndex];
-                                if (rowdata[e]){
-                                    let obj = {}
-                                    obj.x=config.yieldPoints[j];
-                                    obj.y=rowdata[e];
-                                    linedata.push(obj)
-                                    if (j==yields.length-1){
-                                        linePosY=yScale(rowdata[e])-10
-                                        }
-                                }
-                            })
-                            return lineGenerator(linedata)
-                        })
-
-                        const ghostText = ghostGroup.append("text")
-                            .text(function(d){return item.desc})
-                            .attr("x",w-20)
-                            .attr("y",linePosY-(rem*.2))
-                            .attr("text-anchor","end")
-                            .style("font-size","21px")
-                            .attr("opacity",0.8)
-                        fadeOut(ghostLine,0.5,8000)
-                        fadeOut(ghostText,0,8000)
-                    }
+                    const ghostText = ghostGroup
+                      .append("text")
+                      .text(function(d) {
+                        return item.desc;
+                      })
+                      .attr("x", w - 20)
+                      .attr("y", linePosY - rem * 0.2)
+                      .attr("text-anchor", "end")
+                      .style("font-size", "21px")
+                      .attr("opacity", 0.8);
+                    fadeOut(ghostLine, 0.5, 8000);
+                    fadeOut(ghostText, 0, 8000);
+                  }
                 }
-                }
+              }
 
-                d3.select("#timeText")
-                .text(displayTime(data[config.timeIndex].date))
-                d3.select("#timeSlider").property("value",config.timeIndex)
+              d3.select("#timeText").text(
+                displayTime(data[config.timeIndex].date)
+              );
+              d3.select("#timeSlider").property("value", config.timeIndex);
             }
-    }, config.animateSpeed);
+          }, config.animateSpeed);
 
-    function createFrame(chartType){
-        let frame;
-        switch(frameConfig.chartType) {
-            case "socialFrame":
+          function createFrame(chartType) {
+            let frame;
+            switch (frameConfig.chartType) {
+              case "socialFrame":
                 frame = gChartframe.socialFrame(frameConfig);
                 break;
-            case "printFrame":
+              case "printFrame":
                 frame = gChartframe.printFrame(frameConfig);
                 break;
-            case "webFrameS":
+              case "webFrameS":
                 frame = gChartframe.webFrameS(frameConfig);
                 break;
-            case "webFrameM":
+              case "webFrameM":
                 frame = gChartframe.webFrameM(frameConfig);
                 break;
-            case "webFrameL":
+              case "webFrameL":
                 frame = gChartframe.webFrameL(frameConfig);
                 break;
-            case "videoFrame":
+              case "videoFrame":
                 frame = gChartframe.videoFrame(frameConfig);
                 break;
-        }
-        return frame;
-    }
+            }
+            return frame;
+          }
 
-    function getLineColors(chartType){
-        let colors;
-        switch(frameConfig.chartType) {
-            case "socialFrame":
+          function getLineColors(chartType) {
+            let colors;
+            switch (frameConfig.chartType) {
+              case "socialFrame":
                 colors = gChartcolour.lineSocial;
                 break;
-            case "printFrame":
+              case "printFrame":
                 colors = gChartcolour.linePrint;
                 break;
-            case "videoFrame":
+              case "videoFrame":
                 colors = gChartcolour.lineSocial;
                 break;
-            default:
+              default:
                 colors = gChartcolour.categorical_line;
-        }
-        return colors;
-    }
+            }
+            return colors;
+          }
 
-    function getBarColors(chartType){
-        let colors;
-        switch(frameConfig.chartType) {
-            case "socialFrame":
+          function getBarColors(chartType) {
+            let colors;
+            switch (frameConfig.chartType) {
+              case "socialFrame":
                 colors = gChartcolour.lineSocial;
                 break;
-            case "printFrame":
+              case "printFrame":
                 colors = gChartcolour.linePrint;
                 break;
-            case "videoFrame":
+              case "videoFrame":
                 colors = gChartcolour.lineSocial;
                 break;
-            default:
+              default:
                 colors = gChartcolour.categorical_bar;
-        }
-        return colors;
-    }
+            }
+            return colors;
+          }
 
-    function fadeOut(obj,amount,duration){
-        obj.transition().duration(duration).attr("opacity",amount)
-    }
+          function fadeOut(obj, amount, duration) {
+            obj
+              .transition()
+              .duration(duration)
+              .attr("opacity", amount);
+          }
 
-    // a function to work out the extent of values in an array accross multiple properties...
-    function extentMulti(data, columns) {
-        const ext = data.reduce((acc, row) => {
-            const values = columns.map(key => +row[key]);
-            const rowExtent = d3.extent(values);
-            if (!acc.max) {
+          // a function to work out the extent of values in an array accross multiple properties...
+          function extentMulti(data, columns) {
+            const ext = data.reduce((acc, row) => {
+              const values = columns.map(key => +row[key]);
+              const rowExtent = d3.extent(values);
+              if (!acc.max) {
                 acc.max = rowExtent[1];
                 acc.min = rowExtent[0];
-            } else {
+              } else {
                 acc.max = Math.max(acc.max, rowExtent[1]);
                 acc.min = Math.min(acc.min, rowExtent[0]);
-            }
-            return acc;
-        }, {});
-        return [ext.min, ext.max];
-    }
-    }
+              }
+              return acc;
+            }, {});
+            return [ext.min, ext.max];
+          }
+        }
+      });
     });
-
-})
-
-</script>
+  </script>
 </html>
