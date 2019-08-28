@@ -36,8 +36,8 @@
 
     const config = {
       timeIndex: 0,
-      showInversion: true,
-      animateSpeed: 20,
+      showInversion: false,
+      animateSpeed: 83,
       arpFreq: 30,
       arpLength: 100,
       arpChannel: 1,
@@ -67,10 +67,10 @@
       ]
     };
 
-    d3.csv("yield-curve-data.csv", function(data) {
+    d3.csv("yield-curve-monthly-data.csv", function(data) {
       const frameConfig = {
         chartType: "webFrameM",
-        title: "The US yield curve",
+        title: "The shape-shifting US yield curve",
         subtitle: "Treasury yields (%)",
         source: "Produced by Alan Smith|Data source: US Treasury"
       };
@@ -93,7 +93,7 @@
             return d != "date";
           });
           config.timeLength = data.length;
-          const displayTime = d3.timeFormat("%d/%m/%Y");
+          const displayTime = d3.timeFormat("%b %Y");
 
           //create chart frame
           const svg = d3.select("body").append("svg");
