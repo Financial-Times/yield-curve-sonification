@@ -37,39 +37,35 @@
     const config = {
       timeIndex: 0,
       showInversion: true,
-      animateSpeed: 20,
-      arpFreq: 30,
+      animateSpeed: 100,
+      arpFreq: 20,
       arpLength: 100,
       arpChannel: 1,
       arpOn: true,
-      drOn: true,
-      voOn: true,
+      drOn: false,
+      voOn: false,
       invOn: true,
-      logArp: true,
+      logArp: false,
       yieldPoints: [0.083, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
       yieldLabels: ["", "", "", "1y", "", "", "5y", "7y", "10y", "20y", "30y"]
     };
 
     const keyInversions = {
       items: [
-        { date: "24/10/1979", desc: "Oct 1979 - 3 months before recession" },
-        { date: "17/12/1980", desc: "Dec 1980 - 8 months before recession" },
-        { date: "30/03/1989", desc: "Mar 1989 - 16 months before recession" },
-        {
-          date: "18/08/2000",
-          desc: "Aug 2000 - 7 months before dotcom bubble bursts"
-        },
         {
           date: "01/02/2006",
           desc: "Feb 2006 - 21 months before great recession (financial crisis)"
         },
-        { date: "03/01/2019", desc: "The yield curve begins to invert..." }
+        {
+          date: "01/01/2019",
+          desc: "The yield curve begins to invert again..."
+        }
       ]
     };
 
-    d3.csv("yield-curve-data.csv", function(data) {
+    d3.csv("yield-curve-monthly-data.csv", function(data) {
       const frameConfig = {
-        chartType: "socialFrame",
+        chartType: "webFrameM",
         title: "The US yield curve",
         subtitle: "Treasury yields (%)",
         source: "Produced by Alan Smith|Data source: US Treasury"
@@ -93,12 +89,15 @@
             return d != "date";
           });
           config.timeLength = data.length;
-          const displayTime = d3.timeFormat("%d %b %Y");
+          const displayTime = d3.timeFormat("%b %Y");
 
           //create chart frame
           const svg = d3.select("body").append("svg");
           const chartFrame = createFrame(frameConfig.chartType);
           svg.call(chartFrame);
+
+          //set margin
+          chartFrame.margin().right = 20;
 
           //basic colour palettes
           const seqColors = gChartcolour.sequentialMulti;
