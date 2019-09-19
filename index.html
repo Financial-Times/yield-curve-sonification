@@ -32,19 +32,25 @@
 
     //mappings to vocal samples on track 4
     const yearNotes = scaleNotes("C", "semitone", 1, 4);
-    //(Orchestration: use octStart of 5 to access OK Computer voice in EXS24 project file)
+    //(octStart = 5 for OK Computer/EXS24 project)
+
+    //1050 - reg
+    //0 - inverted
+    //5630 - dot com
+    //7072 - fin cris
+    //10590 - aug
 
     const config = {
       timeIndex: 0,
-      showInversion: true,
-      animateSpeed: 20,
-      arpFreq: 30,
+      showInversion: false,
+      animateSpeed: 20000,
+      arpFreq: 1,
       arpLength: 100,
       arpChannel: 1,
-      arpOn: true,
-      drOn: true,
-      voOn: true,
-      invOn: true,
+      arpOn: false,
+      drOn: false,
+      voOn: false,
+      invOn: false,
       logArp: true,
       yieldPoints: [0.083, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30],
       yieldLabels: ["", "", "", "1y", "", "", "5y", "7y", "10y", "20y", "30y"]
