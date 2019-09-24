@@ -18,3 +18,10 @@ This project makes use of [d3js.js](https://d3js.org/) and [webmidi.js](https://
 - Channel 4: incremental vocal samples for year mapped to midi notes
 
 To actually hear a sound you need to establish a connection between Chrome and a valid MIDI-enabled sound source; to hear all tracks, you need a multi-timbral sound source. In my published project, I used Apple Logic Pro. But you could also use an in-browser solution such as [websynths.com](https://websynths.com/) - or connect to a hardware synthesizer using an appropriate MIDI interface.
+
+## License
+
+This software is published by the Financial Times under the MIT licence.
+
+Please note the MIT licence only covers the software, and does not cover any FT content or branding incorporated into the software or made available using the software. FT content is copyright © The Financial Times Limited, and FT and ‘Financial Times’ are trademarks of The Financial Times Limited, all rights reserved. For more information about republishing FT content, please contact our [republishing department](https://enterprise.ft.com/en-gb/services/republishing/).
+
